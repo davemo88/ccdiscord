@@ -8,8 +8,11 @@ import { HttpService, Lang, Logger } from '../services/index.js';
 import { ShardUtils } from '../utils/index.js';
 
 const require = createRequire(import.meta.url);
+
+// Load config based on BOT_CONFIG environment variable
+const configName = process.env.BOT_CONFIG || 'config';
 let BotSites: BotSite[] = require('../../config/bot-sites.json');
-let Config = require('../../config/config.json');
+let Config = require(`../../config/${configName}.json`);
 let Logs = require('../../lang/logs.json');
 
 export class UpdateServerCountJob extends Job {

@@ -7,7 +7,10 @@ import { Reaction } from '../reactions/index.js';
 import { EventDataService } from '../services/index.js';
 
 const require = createRequire(import.meta.url);
-let Config = require('../../config/config.json');
+
+// Load config based on BOT_CONFIG environment variable
+const configName = process.env.BOT_CONFIG || 'config';
+let Config = require(`../../config/${configName}.json`);
 
 export class ReactionHandler implements EventHandler {
     private rateLimiter = new RateLimiter(

@@ -28,8 +28,11 @@ import { JobService, Logger } from '../services/index.js';
 import { PartialUtils } from '../utils/index.js';
 
 const require = createRequire(import.meta.url);
-let Config = require('../../config/config.json');
-let Debug = require('../../config/debug.json');
+
+// Load config based on BOT_CONFIG environment variable
+const configName = process.env.BOT_CONFIG || 'config';
+let Config = require(`../../config/${configName}.json`);
+let Debug = require(`../../config/debug${configName === 'config' ? '' : '-' + configName}.json`);
 let Logs = require('../../lang/logs.json');
 
 export class Bot {
@@ -84,12 +87,36 @@ export class Bot {
         let userTag = this.client.user?.tag;
         Logger.info(Logs.info.clientLogin.replaceAll('{USER_TAG}', userTag));
 
+        // Generate and log bot invite link
+        const inviteLink = `https://discord.com/api/oauth2/authorize?client_id=${Config.client.id}&permissions=412317240384&scope=bot%20applications.commands`;
+        Logger.info(`Bot invite link: ${inviteLink}`);
+        Logger.info(`To add the bot to your server, use the invite link above or: https://discord.gg/NRv5VJ4T`);
+
+        // Log servers the bot is in
+        const guilds = this.client.guilds.cache;
+        Logger.info(`Bot is in ${guilds.size} server(s):`);
+        guilds.forEach(guild => {
+            Logger.info(`  - ${guild.name} (ID: ${guild.id}, Members: ${guild.memberCount})`);
+        });
+
         if (!Debug.dummyMode.enabled) {
             this.jobService.start();
         }
 
         this.ready = true;
         Logger.info(Logs.info.clientReady);
+
+        // Test Claude CLI availability
+        Logger.info('Testing Claude CLI availability...');
+        const { exec } = await import('child_process');
+        exec('claude --version', (error, stdout, stderr) => {
+            if (error) {
+                Logger.error('Claude CLI not found or error:', error);
+                Logger.error('stderr:', stderr);
+            } else {
+                Logger.info('Claude CLI version:', stdout.trim());
+            }
+        });
     }
 
     private onShardReady(shardId: number, _unavailableGuilds: Set<string>): void {
@@ -121,19 +148,25 @@ export class Bot {
     }
 
     private async onMessage(msg: Message): Promise<void> {
+        // Log all messages for debugging
+        Logger.info(`Message received - Author: ${msg.author.tag} (${msg.author.id}), Channel: ${msg.channel.id}, Guild: ${msg.guild?.name || 'DM'}, Content: ${msg.content}`);
+
         if (
             !this.ready ||
             (Debug.dummyMode.enabled && !Debug.dummyMode.whitelist.includes(msg.author.id))
         ) {
+            Logger.info(`Message ignored - Ready: ${this.ready}, DummyMode: ${Debug.dummyMode.enabled}`);
             return;
         }
 
         try {
             msg = await PartialUtils.fillMessage(msg);
             if (!msg) {
+                Logger.info('Message ignored - Could not fill partial message');
                 return;
             }
 
+            Logger.info('Processing message...');
             await this.messageHandler.process(msg);
         } catch (error) {
             Logger.error(Logs.error.message, error);

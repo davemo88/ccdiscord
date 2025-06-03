@@ -3,7 +3,15 @@ import { Options, Partials } from 'discord.js';
 import { createRequire } from 'node:module';
 
 import { Button } from './buttons/index.js';
-import { DevCommand, HelpCommand, InfoCommand, TestCommand } from './commands/chat/index.js';
+import {
+    ClaudeResumeCommand,
+    ClaudeStartCommand,
+    ClaudeStopCommand,
+    DevCommand,
+    HelpCommand,
+    InfoCommand,
+    TestCommand,
+} from './commands/chat/index.js';
 import {
     ChatCommandMetadata,
     Command,
@@ -26,6 +34,7 @@ import { Job } from './jobs/index.js';
 import { Bot } from './models/bot.js';
 import { Reaction } from './reactions/index.js';
 import {
+    ClaudeSessionManager,
     CommandRegistrationService,
     EventDataService,
     JobService,
@@ -34,12 +43,21 @@ import {
 import { Trigger } from './triggers/index.js';
 
 const require = createRequire(import.meta.url);
-let Config = require('../config/config.json');
+
+// Load config based on BOT_CONFIG environment variable
+const configName = process.env.BOT_CONFIG || 'config';
+let Config = require(`../config/${configName}.json`);
 let Logs = require('../lang/logs.json');
 
 async function start(): Promise<void> {
+    // Get working directory from command line args
+    Logger.info(`${process.argv}`)
+    const workingDir = process.argv[2]; // After node script.js [command] [workingDir]
+    Logger.info(`Claude working directory set to: ${workingDir}`);
+
     // Services
     let eventDataService = new EventDataService();
+    let claudeSessionManager = new ClaudeSessionManager(workingDir);
 
     // Client
     let client = new CustomClient({
@@ -60,6 +78,11 @@ async function start(): Promise<void> {
         new HelpCommand(),
         new InfoCommand(),
         new TestCommand(),
+
+        // Claude Commands
+        new ClaudeStartCommand(claudeSessionManager, workingDir),
+        new ClaudeStopCommand(claudeSessionManager),
+        new ClaudeResumeCommand(claudeSessionManager),
 
         // Message Context Commands
         new ViewDateSent(),
@@ -91,7 +114,7 @@ async function start(): Promise<void> {
     let commandHandler = new CommandHandler(commands, eventDataService);
     let buttonHandler = new ButtonHandler(buttons, eventDataService);
     let triggerHandler = new TriggerHandler(triggers, eventDataService);
-    let messageHandler = new MessageHandler(triggerHandler);
+    let messageHandler = new MessageHandler(triggerHandler, claudeSessionManager);
     let reactionHandler = new ReactionHandler(reactions, eventDataService);
 
     // Jobs
@@ -130,6 +153,39 @@ async function start(): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, 1000));
         process.exit();
     }
+
+    // Set up Claude message listener
+    claudeSessionManager.on('claude-message', async (message) => {
+        Logger.info(`Received claude-message event: ${JSON.stringify(message)}`);
+        try {
+            const channel = await client.channels.fetch(message.channelId);
+            Logger.info(`Fetched channel: ${channel?.id}, isTextBased: ${channel?.isTextBased()}`);
+            
+            if (channel?.isTextBased() && 'send' in channel) {
+                // Split long messages if needed
+                const maxLength = 2000;
+                const content = message.content;
+                
+                Logger.info(`Sending message to Discord channel: "${content}"`);
+                
+                if (content.length <= maxLength) {
+                    await channel.send(content);
+                    Logger.info('Message sent successfully');
+                } else {
+                    // Split into chunks
+                    const chunks = content.match(/.{1,2000}/g) || [];
+                    for (const chunk of chunks) {
+                        await channel.send(chunk);
+                    }
+                    Logger.info(`Message sent in ${chunks.length} chunks`);
+                }
+            } else {
+                Logger.warn('Channel is not text-based or cannot send messages');
+            }
+        } catch (error) {
+            Logger.error('Failed to send Claude message to Discord:', error);
+        }
+    });
 
     await bot.start();
 }

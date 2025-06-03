@@ -11,7 +11,10 @@ import { FormatUtils, InteractionUtils, ShardUtils } from '../../utils/index.js'
 import { Command, CommandDeferType } from '../index.js';
 
 const require = createRequire(import.meta.url);
-let Config = require('../../../config/config.json');
+
+// Load config based on BOT_CONFIG environment variable
+const configName = process.env.BOT_CONFIG || 'config';
+let Config = require(`../../../config/${configName}.json`);
 let TsConfig = require('../../../tsconfig.json');
 
 export class DevCommand implements Command {

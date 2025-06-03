@@ -4,7 +4,10 @@ import { createRequire } from 'node:module';
 import pino from 'pino';
 
 const require = createRequire(import.meta.url);
-let Config = require('../../config/config.json');
+
+// Load config based on BOT_CONFIG environment variable
+const configName = process.env.BOT_CONFIG || 'config';
+let Config = require(`../../config/${configName}.json`);
 
 let logger = pino(
     {

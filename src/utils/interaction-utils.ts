@@ -83,11 +83,12 @@ export class InteractionUtils {
                     ephemeral: hidden,
                 });
             } else {
-                return await intr.reply({
+                const response = await intr.reply({
                     ...options,
                     ephemeral: hidden,
-                    fetchReply: true,
+                    withResponse: true,
                 });
+                return 'message' in response ? response.message : response as any;
             }
         } catch (error) {
             if (
@@ -157,10 +158,11 @@ export class InteractionUtils {
                     : content instanceof EmbedBuilder
                       ? { embeds: [content] }
                       : content;
-            return await intr.update({
+            const response = await intr.update({
                 ...options,
-                fetchReply: true,
+                withResponse: true,
             });
+            return 'message' in response ? response.message : response as any;
         } catch (error) {
             if (
                 error instanceof DiscordAPIError &&

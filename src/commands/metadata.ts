@@ -1,4 +1,5 @@
 import {
+    ApplicationCommandOptionType,
     ApplicationCommandType,
     PermissionFlagsBits,
     PermissionsBitField,
@@ -68,6 +69,35 @@ export const ChatCommandMetadata: {
         description_localizations: Lang.getRefLocalizationMap('commandDescs.test'),
         dm_permission: true,
         default_member_permissions: undefined,
+    },
+    CLAUDE_START: {
+        type: ApplicationCommandType.ChatInput,
+        name: 'claude-start',
+        description: 'Start a new Claude session in this channel.',
+        dm_permission: true,
+        default_member_permissions: undefined,
+    },
+    CLAUDE_STOP: {
+        type: ApplicationCommandType.ChatInput,
+        name: 'claude-stop',
+        description: 'Stop the Claude session in this channel.',
+        dm_permission: true,
+        default_member_permissions: undefined,
+    },
+    CLAUDE_RESUME: {
+        type: ApplicationCommandType.ChatInput,
+        name: 'claude-resume',
+        description: 'Resume a previous Claude session using its session ID.',
+        dm_permission: true,
+        default_member_permissions: undefined,
+        options: [
+            {
+                name: 'session_id',
+                description: 'The session ID to resume',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            },
+        ],
     },
 };
 
