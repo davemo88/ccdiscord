@@ -1,133 +1,237 @@
-# Discord Bot TypeScript Template
+# Claude Code Discord Bot
 
-[![discord.js](https://img.shields.io/github/package-json/dependency-version/KevinNovak/Discord-Bot-TypeScript-Template/discord.js)](https://discord.js.org/)
+[![discord.js](https://img.shields.io/badge/discord.js-v14-blue)](https://discord.js.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
-[![Stars](https://img.shields.io/github/stars/KevinNovak/Discord-Bot-TypeScript-Template.svg)](https://github.com/KevinNovak/Discord-Bot-TypeScript-Template/stargazers)
-[![Pull Requests](https://img.shields.io/badge/Pull%20Requests-Welcome!-brightgreen)](https://github.com/KevinNovak/Discord-Bot-TypeScript-Template/pulls)
 
-**Discord bot** - A discord.js bot template written with TypeScript.
+**Claude Code Discord Bot** - A Discord bot that proxies Claude Code sessions to Discord channels, allowing multiple users to interact with Claude AI through Discord.
 
 ## Introduction
 
-This template was created to give developers a starting point for new Discord bots, so that much of the initial setup can be avoided and developers can instead focus on meaningful bot features. Developers can simply copy this repo, follow the [setup instructions](#setup) below, and have a working bot with many [boilerplate features](#features) already included!
-
-For help using this template, feel free to [join our support server](https://discord.gg/c9kQktCbsE)!
-
-[![Discord Shield](https://discord.com/api/guilds/660711235766976553/widget.png?style=shield)](https://discord.gg/c9kQktCbsE)
+This bot enables Discord users to interact with Claude Code (claude.ai/code) directly within Discord channels. It manages Claude CLI sessions, forwards messages between Discord and Claude, and supports multiple concurrent sessions across different bot instances.
 
 ## Features
 
-### Built-In Bot Features:
+### Claude Integration:
 
--   Basic command structure.
--   Rate limits and command cooldowns.
--   Welcome message when joining a server.
--   Shows server count in bot status.
--   Posts server count to popular bot list websites.
--   Support for multiple languages.
+-   **Claude Code Proxy**: Forward Discord messages to Claude CLI and stream responses back.
+-   **Session Management**: Start, stop, and resume Claude sessions within Discord channels.
+-   **Multi-Instance Support**: Run multiple bot instances with separate session namespaces.
+-   **Session Persistence**: Resume sessions using session IDs after bot restarts.
+-   **Command Forwarding**: Claude CLI commands like `/help` and `/model` work seamlessly.
+
+### Core Bot Features:
+
+-   **Slash Commands**: Modern Discord slash command structure.
+-   **Rate Limiting**: Built-in cooldowns to prevent spam.
+-   **Multi-Language Support**: Internationalization using Linguini.
+-   **Welcome Messages**: Automated messages when joining servers.
+-   **Server Statistics**: Shows server count in bot status.
 
 ### Developer Friendly:
 
--   Written with TypeScript.
--   Uses the [discord.js](https://discord.js.org/) framework.
--   Built-in debugging setup for VSCode.
--   Written with [ESM](https://nodejs.org/api/esm.html#introduction) for future compatibility with packages.
--   Support for running with the [PM2](https://pm2.keymetrics.io/) process manger.
--   Support for running with [Docker](https://www.docker.com/).
+-   **TypeScript**: Fully typed codebase for better development experience.
+-   **discord.js v14**: Uses the latest Discord.js framework.
+-   **ESM Modules**: Modern JavaScript module system.
+-   **Testing**: Vitest test suite with coverage reports.
+-   **Linting & Formatting**: ESLint and Prettier configured.
+-   **Docker Support**: Containerization ready.
+-   **PM2 Support**: Process management for production.
 
-### Scales as Your Bot Grows:
+### Scalability:
 
--   Supports [sharding](https://discordjs.guide/sharding/) which is required when your bot is in 2500+ servers.
--   Supports [clustering](https://github.com/KevinNovak/Discord-Bot-TypeScript-Template-Master-Api) which allows you to run your bot on multiple machines.
+-   **Sharding**: Automatic sharding for 2500+ server deployments.
+-   **Clustering**: Multi-machine deployment support.
+-   **HTTP API**: Inter-process communication for distributed setups.
 
 ## Commands
 
-This bot has a few example commands which can be modified as needed.
+### Claude Commands
 
-### Help Command
+#### `/claude-start`
+Starts a new Claude Code session in the current channel. The bot will create a new Claude CLI process and begin forwarding messages.
 
-A `/help` command to get help on different areas of the bot or to contact support:
+#### `/claude-stop`
+Stops the active Claude session in the current channel. The session can be resumed later using its session ID.
 
-![](https://i.imgur.com/UUA4WzL.png)
+#### `/claude-resume <session_id>`
+Resumes a previously stopped Claude session. Useful after bot restarts or to continue conversations in different channels.
 
-![](https://i.imgur.com/YtDdmTe.png)
+### Utility Commands
 
-![](https://i.imgur.com/JXMisap.png)
+#### `/help`
+Get help on different areas of the bot or contact support. Includes categories for different topics.
 
-### Info Command
+#### `/info`
+Get information about the bot, including version, uptime, and useful links.
 
-A `/info` command to get information about the bot or links to different resources.
+#### `/test`
+A simple test command to verify the bot is working correctly.
 
-![](https://i.imgur.com/0kKOaWM.png)
+#### `/dev`
+Developer-only command showing technical information about the bot instance.
 
-### Test Command
+### Context Menu Commands
 
-A generic command, `/test`, which can be copied to create additional commands.
-
-![](https://i.imgur.com/lqjkNKM.png)
-
-### Dev Command
-
-A `/dev` command which can only be run by the bot developer. Shows developer information, but can be extended to perform developer-only actions.
-
-![](https://i.imgur.com/2o1vEno.png)
-
-### Welcome Message
-
-A welcome message is sent to the server and owner when the bot is added.
-
-![](https://i.imgur.com/QBw8H8v.png)
+-   **View Date Sent**: Right-click a message to see when it was sent.
+-   **View Date Joined**: Right-click a user to see when they joined the server.
 
 ## Setup
 
-1. Copy example config files.
-    - Navigate to the `config` folder of this project.
-    - Copy all files ending in `.example.json` and remove the `.example` from the copied file names.
-        - Ex: `config.example.json` should be copied and renamed as `config.json`.
-2. Obtain a bot token.
-    - You'll need to create a new bot in your [Discord Developer Portal](https://discord.com/developers/applications/).
-        - See [here](https://www.writebots.com/discord-bot-token/) for detailed instructions.
-        - At the end you should have a **bot token**.
-3. Modify the config file.
-    - Open the `config/config.json` file.
-    - You'll need to edit the following values:
-        - `client.id` - Your discord bot's [user ID](https://techswift.org/2020/04/22/how-to-find-your-user-id-on-discord/).
-        - `client.token` - Your discord bot's token.
-4. Install packages.
-    - Navigate into the downloaded source files and type `npm install`.
-5. Register commands.
-    - In order to use slash commands, they first [have to be registered](https://discordjs.guide/creating-your-bot/command-deployment.html).
-    - Type `npm run commands:register` to register the bot's commands.
-        - Run this script any time you change a command name, structure, or add/remove commands.
-        - This is so Discord knows what your commands look like.
-        - It may take up to an hour for command changes to appear.
+### Prerequisites
 
-## Start Scripts
+-   Node.js 18.x or higher
+-   npm or yarn
+-   Claude CLI installed and configured (for Claude features)
+-   Discord Bot Token
 
-You can run the bot in multiple modes:
+### Installation
 
-1. Normal Mode
-    - Type `npm start`.
-    - Starts a single instance of the bot.
-2. Manager Mode
-    - Type `npm run start:manager`.
-    - Starts a shard manager which will spawn multiple bot shards.
-3. PM2 Mode
-    - Type `npm run start:pm2`.
-    - Similar to Manager Mode but uses [PM2](https://pm2.keymetrics.io/) to manage processes.
+1. **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    cd ccdiscord
+    ```
 
-## Bots Using This Template
+2. **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-A list of Discord bots using this template.
+3. **Configure the bot:**
+    - Navigate to the `config` folder
+    - Copy all `.example.json` files and remove the `.example` suffix:
+        - `config.example.json` → `config.json`
+        - `bot-sites.example.json` → `bot-sites.json`
+        - `debug.example.json` → `debug.json`
 
-| Bot                                                                    | Servers                                                       |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [Birthday Bot](https://top.gg/bot/656621136808902656)                  | ![](https://top.gg/api/widget/servers/656621136808902656.svg) |
-| [QOTD Bot](https://top.gg/bot/713586207119900693)                      | ![](https://top.gg/api/widget/servers/713586207119900693.svg) |
-| [Friend Time](https://top.gg/bot/471091072546766849)                   | ![](https://top.gg/api/widget/servers/471091072546766849.svg) |
-| [Bento](https://top.gg/bot/787041583580184609)                         | ![](https://top.gg/api/widget/servers/787041583580184609.svg) |
-| [NFT-Info](https://top.gg/bot/902249456072818708)                      | ![](https://top.gg/api/widget/servers/902249456072818708.svg) |
-| [Skylink-IF](https://top.gg/bot/929527099922993162)                    | ![](https://top.gg/api/widget/servers/929527099922993162.svg) |
-| [Topcoder TC-101](https://github.com/topcoder-platform/tc-discord-bot) |                                                               |
+4. **Set up Discord Bot:**
+    - Create a new application in the [Discord Developer Portal](https://discord.com/developers/applications/)
+    - Create a bot and copy the token
+    - Enable the following intents:
+        - Server Members Intent
+        - Message Content Intent
+    - Edit `config/config.json`:
+        - Set `client.id` to your bot's application ID
+        - Set `client.token` to your bot token
 
-Don't see your bot listed? [Contact us](https://discord.gg/c9kQktCbsE) to have your bot added!
+5. **Register slash commands:**
+    ```bash
+    npm run commands:register
+    ```
+
+### Multi-Instance Setup (Optional)
+
+To run multiple bot instances with different identities:
+
+1. Create additional config files:
+    - `config-bot1.json` for Bot1 (port 3001)
+    - `config-bot2.json` for Bot2 (port 3002)
+
+2. Configure each instance with unique:
+    - Bot tokens
+    - API ports
+    - Bot identity (name, colors)
+    - Session prefixes
+
+3. Start specific instances:
+    ```bash
+    npm run start:bot1  # Uses config-bot1.json
+    npm run start:bot2  # Uses config-bot2.json
+    ```
+
+## Running the Bot
+
+### Development Mode
+
+```bash
+npm start              # Single instance with config.json
+npm run start:bot1     # Bot1 instance with config-bot1.json
+npm run start:bot2     # Bot2 instance with config-bot2.json
+```
+
+### Production Mode
+
+```bash
+npm run start:manager  # Sharding manager for scaling
+npm run start:pm2      # PM2 process manager
+```
+
+### Other Scripts
+
+```bash
+# Development
+npm run build          # Compile TypeScript
+npm run dev            # Watch mode (if configured)
+
+# Code Quality
+npm run lint           # Run ESLint
+npm run lint:fix       # Auto-fix linting issues
+npm run format         # Check Prettier formatting
+npm run format:fix     # Auto-format code
+
+# Testing
+npm test               # Run tests
+npm run test:watch     # Watch mode
+npm run test:coverage  # Coverage report
+
+# Discord Commands
+npm run commands:view      # View registered commands
+npm run commands:register  # Register commands
+npm run commands:rename    # Rename commands
+npm run commands:delete    # Delete specific commands
+npm run commands:clear     # Clear all commands
+```
+
+## Architecture
+
+### Core Components
+
+-   **`start-bot.ts`**: Single bot instance entry point
+-   **`start-manager.ts`**: Sharding manager for multi-process scaling
+-   **`ClaudeSessionManager`**: Manages Claude CLI processes and message routing
+-   **Event Handlers**: Modular handlers for Discord events
+-   **Command System**: Slash commands with metadata and permissions
+
+### Key Features
+
+-   **Session Management**: In-memory storage of Claude sessions
+-   **Message Routing**: Bi-directional message flow between Discord and Claude
+-   **Multi-Instance Support**: Different bot identities with isolated sessions
+-   **Error Handling**: Graceful error recovery and session cleanup
+
+## Configuration
+
+### Main Configuration (`config.json`)
+
+```json
+{
+    "client": {
+        "id": "YOUR_BOT_ID",
+        "token": "YOUR_BOT_TOKEN"
+    },
+    "api": {
+        "port": 3000
+    }
+}
+```
+
+### Environment Variables
+
+-   `BOT_CONFIG`: Specify which config file to use (e.g., `bot1`, `bot2`)
+-   `NODE_ENV`: Set to `production` for production deployments
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For issues and feature requests, please use the [GitHub Issues](https://github.com/your-repo/issues) page.
